@@ -66,13 +66,9 @@ gulp.task('clean', function() {
 });
 
 // dev
-gulp.task('dev', function () {
+gulp.task('dev', ['clean'],  function () {
     process.env.NODE_ENV = 'development';
-    gulp.watch('src/javascript/**/*.js', express('server.js'));
-    gulp.watch('src/style/**/*.scss', ['sass']);
-    gulp.watch('src/javascript/**/*.js', ['script']);
-    gulp.watch('src/image/**/*', ['image']);
-    gulp.watch('src/**/*.html', ['html']);
+    gulp.start('watch', 'sass', 'script', 'image', 'html');
 });
 
 // build
@@ -82,6 +78,6 @@ gulp.task('build', ['clean'], function() {
 });
 
 // default
-gulp.task('default', ['clean'], function() {
-    gulp.start('dev', 'sass', 'script', 'image', 'html');
+gulp.task('default', function() {
+    gulp.start('dev');
 });
