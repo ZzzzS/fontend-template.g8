@@ -1,87 +1,59 @@
-"use strict";
+const webpack = require('webpack');
+const isDebug = process.env.NODE_ENV === 'development';
+const CommonsChunkPlugin = require("webpack/lib/optimize/CommonsChunkPlugin");
 
-const gulp = require('gulp');
-const sass = require('gulp-ruby-sass');
-const express = require('gulp-dev-express');
-const cleanCSS = require('gulp-clean-css');
-const rename = require("gulp-rename");
-const sourcemaps = require('gulp-sourcemaps');
-const notify = require('gulp-notify');
-const fileinclude = require('gulp-file-include');
-const cache = require('gulp-cached');
-const imagemin = require('gulp-imagemin');
-const clean = require('gulp-clean');
-const order = require("gulp-order");
-const concat = require('gulp-concat');
-const jshint = require('gulp-jshint');
-const uglify = require('gulp-uglify');
-const webpack = require('gulp-webpack');
-const gulpif = require('gulp-if');
+const plugins = [
+    //直接定义第三方库
+    new webpack.ProvidePlugin({
+        $: 'jquery'
+    })
+];
 
+if (!isDebug) {
+    plugins.push(
+        //压缩
+        new webpack.optimize.UglifyJsPlugin({
+            compress: {
+                warnings: false
+            },
+            output: {
+                comments: false
+            }
+        }),
 
-// style
-gulp.task('sass', function () {
-    sass(['./src/style/*.scss', '!src/style/components/*.scss'])
-        .on('error', sass.logError)
-        .pipe(gulp.dest('./dist/css'))
-        .pipe(gulpif(process.env.NODE_ENV === 'development', sourcemaps.init()))
-        .pipe(gulpif(process.env.NODE_ENV === 'production', cleanCSS({compatibility: 'ie8'})))
-        .pipe(gulpif(process.env.NODE_ENV === 'development', sourcemaps.write()))
-        .pipe(gulp.dest('./dist/css'))
-        .pipe(notify({ message: 'Style task complete' }));
-});
+        //定义公共chunk
+        new CommonsChunkPlugin({
+            // (the commons chunk name)
+            name: "commons",
 
-//html
-gulp.task('html', function() {
-    return gulp.src(['src/**/*.html', '!src/html/components/*.html'])
-        .pipe(fileinclude({
-            prefix: '@@',
-            basepath: '@file'
-        }))
-        .pipe(gulp.dest('dist/'))
-        .pipe(notify({ message: 'Html task complete' }));
-});
+            // (the filename of the commons chunk)
+            filename: "commons.js",
 
-// image
-gulp.task('image', function() {
-    return gulp.src('src/image/**/*')
-        .pipe(cache(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
-        .pipe(gulp.dest('dist/res'))
-        .pipe(notify({ message: 'image task complete' }));
-});
+            // (Modules must be shared between 2 entries)
+            minChunks: 2,
 
-// script
-gulp.task('script', function() {
-    return gulp.src('src/javascript/index.js')
-        .pipe(webpack( require('./webpack.config.js') ))
-        .pipe(gulp.dest('dist/js'))
-        .pipe(notify({ message: 'script task complete' }));
-});
+            // (Only use these entries)
+            chunks: []
+        })
+    );
+}
 
-// clean
-gulp.task('clean', function() {
-    return gulp.src(['dist/css', 'dist/js', 'dist/res', 'dist/*.html'], {read: false})
-        .pipe(clean())
-        .pipe(notify({ message: 'clean task complete' }));
-});
+module.exports = {
+    devtool: isDebug ? '#source-map' : '',
 
-// dev
-gulp.task('dev', function () {
-    process.env.NODE_ENV = 'development';
-    gulp.watch('src/javascript/**/*.js', express('server.js'));
-    gulp.watch('src/style/**/*.scss', ['sass']);
-    gulp.watch('src/javascript/**/*.js', ['script']);
-    gulp.watch('src/image/**/*', ['image']);
-    gulp.watch('src/**/*.html', ['html']);
-});
+    entry: {
+        main:'./src/javascript/index.js'
+    },
+    output: {
+        filename: '[name].js'
+    },
+    module: {
+        loaders: [{
+            test: /\.js$/,
+            exclude: /node_modules/,
+            loader: 'babel-loader'
+        }]
+    },
 
-// build
-gulp.task('build', ['clean'], function() {
-    process.env.NODE_ENV = 'production';
-    gulp.start('sass', 'script', 'image', 'html');
-});
-
-// default
-gulp.task('default', ['clean'], function() {
-    gulp.start('dev', 'sass', 'script', 'image', 'html');
-});
+    plugins
+};
