@@ -1,6 +1,3 @@
-/**
- * Created by zzzz on 2017/5/26.
- */
 "use strict";
 
 const gulp = require('gulp');
