@@ -6,8 +6,9 @@ This project is frontend development environment, using gulp and webpack.
 
 1. run 'npm install' to install all of the dependencies used by the project.
 1. run 'sudo gem install sass' to install sass using gem.
-1. if you haven't installed webpack globally.you should run 'npm install webpack -g'.
-1. if you haven't installed gulp globally.you should run 'npm install gulp -g'.
+1. if you haven't installed webpack globally and you want to run webpack in command line.you should run 'npm install webpack -g'.
+1. if you haven't installed gulp globally and you want to run gulp in command line.you should run 'npm install gulp -g'.
+1. if you haven't installed jest globally and you want to run jest in command line.you should run 'npm install jest -g'
 
 ####references:
 1. [gulp-file-include](https://www.npmjs.com/package/gulp-file-include/)
